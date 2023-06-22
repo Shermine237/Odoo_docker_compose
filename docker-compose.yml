@@ -1,0 +1,83 @@
+version: "3.9"
+
+services:
+  apache:
+    container_name: apache_server
+    build:
+      context: https://github.com/Shermine237/Apache_docker.git
+      args:
+        - NAME=${USER_NAME}
+        - PASSWORD=${USER_PASSWORD}
+    env_file:
+      - .env
+    networks:
+      odoo_publ:
+         ipv4_address: 192.168.1.100
+      odoo_priv: {}
+    extra_hosts:
+      - "myodoo.local:192.168.1.100"
+    volumes:
+      - type: bind
+        source: "${VOLUME_VIEW}"
+        target: "/bind_volume/odoo_view"
+    configs:
+      - source: apache_config
+        target: "${APACHE_CONFIG_TARGET_FOLDER}/httpd.conf"
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+    stdin_open: true
+    tty: true
+
+  postgres:
+    container_name: postgresql_server
+    build:
+      context: https://github.com/Shermine237/PostgreSQL_docker.git
+      args:
+        - NAME=${USER_NAME}
+        - PASSWORD=${USER_PASSWORD}
+    env_file:
+      - .env
+    networks:
+      - odoo_priv
+    configs:
+      - source: postgres_config_file
+        target: "${POSTGRES_CONFIG_TARGET_FOLDER}/postgresql.conf"
+      - source: postgres_hba_file
+        target: "${POSTGRES_CONFIG_TARGET_FOLDER}/pg_hba.conf"
+      - source: postgres_ident_file
+        target: "${POSTGRES_CONFIG_TARGET_FOLDER}/pg_ident.conf"
+    stdin_open: true
+    tty: true
+
+
+networks:
+  odoo_priv:
+      name: odoo_private_network
+      driver: bridge 
+      ipam:
+        config:
+          - subnet: 172.28.0.0/16
+
+  odoo_publ:
+      name: odoo_public_network
+      driver: bridge
+      ipam:
+        config:
+          - subnet: 192.168.1.0/24
+
+configs:
+  apache_config:
+    file: "${CONFIG_PATH}/apache/httpd.conf"
+    external: false
+  postgres_config_file:
+    file: "${CONFIG_PATH}/postgres/postgresql.conf"
+    external: false
+  postgres_hba_file:
+    file: "${CONFIG_PATH}/postgres/pg_hba.conf"
+    external: false
+  postgres_ident_file:
+    file: "${CONFIG_PATH}/postgres/pg_ident.conf"
+    external: false
