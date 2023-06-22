@@ -71,13 +71,13 @@ networks:
 configs:
   apache_config:
     file: "${CONFIG_PATH}/apache/httpd.conf"
-    external: false
+    external: true
   postgres_config_file:
     file: "${CONFIG_PATH}/postgres/postgresql.conf"
-    external: false
+    external: true
   postgres_hba_file:
     file: "${CONFIG_PATH}/postgres/pg_hba.conf"
-    external: false
+    external: true
   postgres_ident_file:
     file: "${CONFIG_PATH}/postgres/pg_ident.conf"
-    external: false
+    external: true
