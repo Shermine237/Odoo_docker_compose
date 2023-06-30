@@ -16,10 +16,6 @@ services:
       odoo_priv: {}
     extra_hosts:
       - "myodoo.local:192.168.1.100"
-    volumes:
-      - type: bind
-        source: "${VOLUME_VIEW}"
-        target: "/bind_volume/odoo_view"
     configs:
       - source: apache_config
         target: "${APACHE_CONFIG_TARGET_FOLDER}/httpd.conf"
@@ -52,6 +48,28 @@ services:
     stdin_open: true
     tty: true
 
+  server_odoo:
+    container_name: odoo_server
+    build:
+      context: https://github.com/Shermine237/Debian_server_docker.git
+      args:
+        - NAME=${USER_NAME}
+        - PASSWORD=${USER_PASSWORD}
+    env_file:
+      - .env
+    networks:
+      - odoo_priv
+    volumes:
+      - type: bind
+        source: "${VOLUME_VIEW}"
+        target: "/odoo_src"
+    ports:
+      - target: 8069
+        published: 8069
+        protocol: tcp
+        mode: host
+    stdin_open: true
+    tty: true
 
 networks:
   odoo_priv:
